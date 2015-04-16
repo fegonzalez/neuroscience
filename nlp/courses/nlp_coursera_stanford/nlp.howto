@@ -1,0 +1,158 @@
+################################################################################
+# INDEX
+################################################################################
+
+1) Lecture 01: Basic Text Processing 
+   1.1) Regular Expressions
+   1.2) Regular_Expressions_in_Practical_NLP
+   1.3) Word Tokenization
+   a) Simple Tokenization in Unix
+   1.4) Word Normalization and Stemming
+   a) Lemmatization
+   1.5) Sentence Segmentation
+
+1bis) Lecture 01.bis: Edit distance
+      1.6) Defining_Minimum_Edit_Distance
+      1.7) Computing_Minimum_Edit_Distance
+      1.8) Backtrace_for_Computing_Alignments
+      1.9) Weighted_Minimum_Edit_Distance
+      1.10) Minimum_Edit_Distance_in_Computational_Biology
+
+
+2) Lecture 02:Language Modeling
+
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# 1.3) Word Tokenization
+#-------------------------------------------------------------------------------
+
+• Type: an element of the vocabulary.
+• Token: an instance of that type in running text.
+  V = vocabulary = set of types (|V| = size)
+  N = number of tokens
+
+# Simple Tokenization in Unix (get V)
+tr 'A-Z' 'a-z' <materials/shakes.txt  # to low-case
+   | tr -sc 'A-Za-z' '\n'             # print one token per line
+   | sort                             # sort alphabet.
+   | uniq -c                          # merge & count each 'Type' (V)
+   | sort -n -r | less                # sort by frequency
+
+
+Issues is tokenization:
+• I'm, isn't
+• state-of-the-art -> state of the art ?
+• lowercase -> lower-case, lowercase, lower case ?
+• Languages issues: Chinese & Japanese has no spaces between words, ...
+
+
+#-------------------------------------------------------------------------------
+1.4) Word Normalization and Stemming
+#-------------------------------------------------------------------------------
+
+a) Lemmatization: reduce inflections or variant forms to base form.
+   • am, are, is -> be
+   • car, cars, car's -> car
+
+b) Stemming
+
+* Morphemes: stems (core) + affixes (prefix & suffix)
+   
+* Stemming = reduce terms to their stems in info. retrieval = chopping affixes.
+  – language dependent
+  – e.g., automate(s), automatic, automation all reduced to automat.
+  - e.g. (English) Porter's algorithm.
+
+
+#-------------------------------------------------------------------------------
+1.5) Sentence Segmentation
+#-------------------------------------------------------------------------------
+
+Find the final of sentences (?, !, .): use binary classifiers (decision trees).
+
+
+#-------------------------------------------------------------------------------
+1.6) Defining_Minimum_Edit_Distance
+#-------------------------------------------------------------------------------
+
+def) Minimum number of editing operations (insertion, deletion, substitution),
+needed to transform one into the other.
+
+       • X of length n, Y of length m: D(n,m)
+
+#-------------------------------------------------------------------------------
+1.7) Computing_Minimum_Edit_Distance
+#-------------------------------------------------------------------------------
+
+- Is a Dynamic programming task.
+
+- ALGORITHM: Levenshtein distance: http://en.wikipedia.org/wiki/Levenshtein_distance
+
+- MinEdit:"1_7.Computing_Minimum_Edit_Distance.mp4" video
+
+
+#-------------------------------------------------------------------------------
+1.8) Backtrace_for_Computing_Alignments
+#-------------------------------------------------------------------------------
+
+Note.- 1.8_video = "1_8.Backtrace_for_Computing_Alignments.mp4"
+
+- Goal: in addition to edit distance, we need to align each character of the two
+strings to each other.
+
+- How: keeping the trace for each cell of the edit table.
+  - MinEdit with backtrace: 1.8_video, t=3:03
+  - Algorithm pseudo-code: 1.8_video, t=4:12
+
+- Result = two stings and their alignment.
+
+- Performance: time=O(nm), space==(nm), backtrace=O(n+m)
+
+
+#-------------------------------------------------------------------------------
+1.9) Weighted_Minimum_Edit_Distance
+#-------------------------------------------------------------------------------
+
+- Keep a record of the more common errors and use them in the calculation of
+  the Edit distance (by adding a weight factor in the distance)
+
+- Algorithm pseudo-code: 1.9_video, t=2:02
+
+
+#-------------------------------------------------------------------------------
+1.10) Minimum_Edit_Distance_in_Computational_Biology
+#-------------------------------------------------------------------------------
+
+Note.- 1.10_video = "1_10.Minimum_Edit_Distance_in_Computational_Biology.mp4"
+
+NLP: distance (min) & weights
+BIO: similarity (max) & scores
+
+a) ALGORITHM: Needleman-Wunsch:
+  http://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
+
+- Algorithm pseudo-code: 1.10_video, t=2:00
+
+b) The Overlap Detection Variant of the alg. (1.10_video, t=5:00)
+  Use only the overlaps of the two sequences ignoring the rest of the matrix.
+
+c) The Local Alignmnet Problem:
+  Given two strings, find only the substring whose similarity is maximum.
+
+  c1) Smith-Waterman algorithm:
+      http://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm
+      - Idea: Ignore badly aligning regions
+      - 1.10_video, t= 7:15 - 8:00
+
+
+
+
+################################################################################
+2) Lecture 02:Language Modeling
+################################################################################
+
+#-------------------------------------------------------------------------------
+2.1) 
+#-------------------------------------------------------------------------------

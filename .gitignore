@@ -15,7 +15,6 @@
 nlp/courses/*.tar.gz
 nlp/courses/NaturalLanguageProcessing
 #nlp_coursera_stanford
-nlp/courses/nlp_coursera_stanford/CMP462*
 nlp/courses/nlp_coursera_stanford/*
-! nlp/courses/nlp_coursera_stanford/nlp.howto
+!nlp/courses/nlp_coursera_stanford/nlp.howto
 
