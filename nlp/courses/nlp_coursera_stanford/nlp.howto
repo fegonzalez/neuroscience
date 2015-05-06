@@ -2,27 +2,59 @@
 # INDEX
 ################################################################################
 
-1) Lecture 01: Basic Text Processing 
+1) Lecture01_1.Basic_Text_Processing 
    1.1) Regular Expressions
    1.2) Regular_Expressions_in_Practical_NLP
    1.3) Word Tokenization
-   a) Simple Tokenization in Unix
+   	a) Simple Tokenization in Unix
    1.4) Word Normalization and Stemming
-   a) Lemmatization
+   	a) Lemmatization
    1.5) Sentence Segmentation
+1_2) Lecture01.2: Edit_Distance
+   1.6) Defining_Minimum_Edit_Distance
+   1.7) Computing_Minimum_Edit_Distance
+   1.8) Backtrace_for_Computing_Alignments
+   1.9) Weighted_Minimum_Edit_Distance
+   1.10) Minimum_Edit_Distance_in_Computational_Biology
 
-1bis) Lecture 01.bis: Edit distance
-      1.6) Defining_Minimum_Edit_Distance
-      1.7) Computing_Minimum_Edit_Distance
-      1.8) Backtrace_for_Computing_Alignments
-      1.9) Weighted_Minimum_Edit_Distance
-      1.10) Minimum_Edit_Distance_in_Computational_Biology
+2) Lecture02.Language Modeling
+   2.1) Introduction to N-grams (8:41)
+   2.2) Estimating N-gram Probabilities (9:38)
+   2.3) Evaluation and Perplexity (11:09)
+   2.4) Generalization and Zeros (5:15)
+   2.5) Add-One (Laplace) smoothing (6:30)
+   2.6) Interpolation, Backoff, and Web-Scale LMs (10:25)
+   	2.6.1) Interpolation
+   	2.6.2) Unknown words: Open versus closed vocabulary tasks
+	2.6.3) N-gram Smoothing Summary
+   2.7) Good-Turing Smoothing (15:35)   
+   	2.7.2) Ney et al. Good Turing Intuition:
+	2.7.3) Good-Turing complications:
+   2.8) Kneser-Ney Smoothing (8:59)
+
+   Recap
+   ● N-gram Language Model
+   ● Estimation
+   ● Smoothing
+      – Laplace
+      – Good-Turing
+      – Kneser-Ney
+   
+
+3) Lecture03.Spelling_Correction
+   3.1) The Spelling Correction Task (5:39)
+   3.2) The Noisy Channel Model of Spelling (19:30)
+   3.3) Real-Word Spelling Correction (9:19)
+   3.4) State of the Art Systems (7:10)
 
 
-2) Lecture 02:Language Modeling
+Annex) References
+
+
 
 ################################################################################
-
+Lecture01_1.Basic_Text_Processing 
+################################################################################
 
 #-------------------------------------------------------------------------------
 # 1.3) Word Tokenization
@@ -35,7 +67,7 @@
 
 # Simple Tokenization in Unix (get V)
 tr 'A-Z' 'a-z' <materials/shakes.txt  # to low-case
-   | tr -sc 'A-Za-z' '\n'             # print one token per line
+   | tr -sc 'A-Za-z' '\n'             # remove spaces & print one token per line
    | sort                             # sort alphabet.
    | uniq -c                          # merge & count each 'Type' (V)
    | sort -n -r | less                # sort by frequency
@@ -62,7 +94,7 @@ b) Stemming
    
 * Stemming = reduce terms to their stems in info. retrieval = chopping affixes.
   – language dependent
-  – e.g., automate(s), automatic, automation all reduced to automat.
+  – e.g., automate(s), automatic, automation -> all reduced to automat.
   - e.g. (English) Porter's algorithm.
 
 
@@ -73,8 +105,13 @@ b) Stemming
 Find the final of sentences (?, !, .): use binary classifiers (decision trees).
 
 
+
+################################################################################
+Lecture01_1.Basic_Text_Processing 
+################################################################################
+
 #-------------------------------------------------------------------------------
-1.6) Defining_Minimum_Edit_Distance
+# 1.6) Defining_Minimum_Edit_Distance
 #-------------------------------------------------------------------------------
 
 def) Minimum number of editing operations (insertion, deletion, substitution),
@@ -150,9 +187,312 @@ c) The Local Alignmnet Problem:
 
 
 ################################################################################
-2) Lecture 02:Language Modeling
+## 2) Lecture02.Language Modeling
 ################################################################################
 
+
 #-------------------------------------------------------------------------------
-2.1) 
+# 2.1) Introduction to N-grams (8:41)
 #-------------------------------------------------------------------------------
+
+a) Goal: assign a probability to a sentence: p(...) > p(...)
+
+- Why?: spell correction, speech recognition, ...
+- How: apply the Chain Rule of Probability
+       P(A, B) = P(A) P(B|A)
+       P(x1,x2,x3,…,xn) = P(x1)P(x2|x1)P(x3|x1,x2)…P(xn|x1,…,xn-1)
+       P(Word1 W2 ..Wn) = MULT(i)  P(Wi/W1 W2 .. Wi-1)
+
+- How to estimate these probabilities:
+Problem: too many possible sentences to use the chain rule formula
+Solution: Simplifying assumption -> the Markov assumption
+
+
+b) Markov Assumption: use the last few (Wi-k .. Wi-1)) words
+
+   P(Wi / W1 W2 .. Wi-1) =~ P(Wi / Wi-k .. Wi-1)
+
+
+- Unigram model: use each word separately -> P(w1w2…wn ) =~ MULT(i) P(wi)
+
+- Bigram model: use the previous word -> P(Wi/w1w2…Wi-1 ) =~ P(Wi/Wi-1)
+
+- N-gram models: in general is an insufficient model due to the long distance
+  dependencies in sentences, BUT in practice we can use it.
+
+
+  Hint: N-GRAM MODELS OVER-FITTING (bad generalization) -> n-gram only work
+  well for word prediction if the test corpus looks like the set corpus
+  (i.e. Both a Shakespeare test (OK), training with Shakes. and test with Wall
+  Street Journal (BAD))
+
+
+#-------------------------------------------------------------------------------
+2.2) Estimating N-gram Probabilities (9:38)
+#-------------------------------------------------------------------------------
+
+c) Estimating bigram probabilities
+
+  MLE estimate: maximizes the likelihood of the training set T given the model M
+
+  P(Wi / Wi-1) = count(Wi-1, Wi) / count(Wi-1)
+
+(*) Example.-
+
+<s> I am Sam </s>
+<s> Sam I am </s>
+<s> I do not like green eggs and ham </s>
+p(<s> I am Sam </s>) ?
+
+P(I/<s>) = c(<s>, I) / (c(<s>) = 2/3 = 0.67
+P(am/I) = 0.67
+P(Sam/am) = 1/2=0.5
+P(</s> / Sam) = 0.5
+p(<s> I am Sam </s>) = P(I/<s>) * P(am/I) * P(Sam/am) * P(</s> / Sam) = 1/9
+
+\Warning: Practical issue: we do all in log space (avoid underflow due to low
+number multiplications & adding is faster than multiplying)
+
+log(p1*p2*..pn) = log(p1) + log(p2) + .. + log(pn)
+
+log(p(<s> I am Sam </s>)) = log(2/3) + log(2/3) + log(1/2) + log(1/2) = -0.95424
+p = 10 exp( -0.95424) = 1/9
+
+
+(*) More examples: Berkeley Restaurant Project sentences ("L02 Language
+Modeling.pdf", page 19)
+
+
+#-------------------------------------------------------------------------------
+   2.3) Evaluation and Perplexity (11:09)
+#-------------------------------------------------------------------------------
+
+* Model eval = Applying an evaluation Metric over a Training Set and a Test Set
+
+2.3.1) Extrinsic evaluation Metric
+
+Best evaluation for comparing models A and B
+– Put each model in a task (spelling corrector, speech recognizer, ...)
+– Run the task, get an accuracy for A and for B
+  ● How many misspelled words corrected properly
+  ● How many words translated correctly
+– Compare accuracy for A and B
+
+PROBLEM: computationally expensive & time consuming (days, weeks...)
+
+2.3.2) Intrinsic evaluation Metric: Perplexity
+
+Quick & dirty solution: bad generalization BUT quick to take a look to a model.
+
+- Intuition of Perplexity: the best language model is one that best predicts an
+  unseen test set, thus Gives the highest P(sentence).
+
+  	  LOWER PERPLEXITY = BETTER MODEL
+
+- Formula: PP(W) = P(w1w2...wN) exp (-1/N) #note.- Wi of the "test set"
+
+	  MINIMIZING PERPLEXITY = MAXIMIZING PROBABILITY
+
+- The Shannon Game intuition for perplexity
+• How hard is the task of recognizing digits ‘0,1,2,3,4,5,6,7,8,9’
+  Perplexity 10
+• How hard is recognizing (30,000) names at Microsoft.
+  Perplexity = 30,000
+
+- Perplexity as branching factor
+
+
+#-------------------------------------------------------------------------------
+   2.4) Generalization and Zeros (5:15)
+#-------------------------------------------------------------------------------
+
+* Problem: See 2.1) Hint
+
+- Zeros: a type of generalization case that occurs when there were no
+occurrences in the training set but exits some occurrences in the test set.
+
+  Bigrams with zero probability -> p(test set)=0 -> perplexity can not be
+  calculated (division by 0)
+  
+#-------------------------------------------------------------------------------
+2.5) Add-One (Laplace) smoothing (6:30)
+#-------------------------------------------------------------------------------
+
+• Pretend we saw each word one more time than we did -> Just add one to all the
+  counts!
+
+• MLE estimate: P MLE (wi | wi-1) = c(wi-1,wi ) / c(wi-1)
+
+• Add-1 estimate: P Add-1(wi | wi-1) = c(wi-1,wi )+ 1 / c(wi-1)+ V
+
+(*) Example (Berkeley Restaurant example.- "L02 Language Modeling.pdf", 50) ->
+sometimes lead to big changes from the MLE method -> bad for N-grams.
+
+Conclusions:
+
+! So add-1 isn’t used for N-grams:
+
+! But add-1 is used to smooth other NLP models
+  – For text classification
+  – In domains where the number of zeros isn’t so huge.
+
+
+#-------------------------------------------------------------------------------
+2.6) Interpolation, Backoff, and Web-Scale LMs (10:25)
+#-------------------------------------------------------------------------------
+
+2.6.1) Interpolation
+
+Intuition: Sometimes it helps to use less context (when you haven’t learned
+much about the context)
+
+a) Backoff:
+  – use trigram if you have good evidence,
+  – otherwise bigram, otherwise unigram
+
+b) Interpolation:
+   – mix unigram, bigram, trigram
+
+   b1) Linear Interpolation
+
+       P(Wn|Wn-1Wn-2) = λ1*P(Wn|Wn-1Wn-2)     # λ1 trigram
+       		        + λ2*P(Wn|Wn-1)       # λ2 bigram
+       		        + λ3*P(Wn)	      # λ3 monogram
+
+   b2) How to set the lambdas.- split the data in 3 sets (idem machine learning)
+       - Training set: Fix the N-gram probabilities
+       - Dev. set: search for λs that give largest probability to dev. set
+       - Test set: check how good is the model.
+
+!! EXPERIMENTALLY CHECKED: Interpolation works better
+
+
+2.6.2) Unknown words: Open versus closed vocabulary tasks
+
+If we know all the words in advanced
+   – Vocabulary V is fixed
+   – Closed vocabulary task
+
+Otherwise:
+step 1) Create an unknown word token <UNK>
+step 2) Training of <UNK> probabilities
+ a) Create a fixed lexicon L of size V (may be by removing less probable words)
+ b) At text normalization phase, any training word not in L changed to <UNK>
+ c) Now we train its probabilities like a normal word
+ d) At decoding time:
+    If text input: Use UNK probabilities for any word not in training
+
+
+2.6.3) N-gram Smoothing Summary
+
+• Add-1 smoothing: OK for text categorization, not for language modeling
+
+• The most commonly used method: Extended Interpolated Kneser-Ney
+
+• For very large N-grams like the Web: Stupid backoff (No discounting, just use
+  relative frequencies)
+
+
+#-------------------------------------------------------------------------------
+2.7) Good-Turing Smoothing (15:35)
+#-------------------------------------------------------------------------------
+
+- Intuition: use the count of things we’ve seen once to help estimate the count
+  of things we’ve never seen.
+
+- Notation: Nc = Frequency of frequency c = count of things we've seen c times.
+
+- Good-Turing smoothing intuition (fishing example):
+  You are fishing (a scenario from Josh Goodman), and caught: 10 carp, 3 perch,
+  2 whitefish, 1 trout, 1 salmon, 1 eel = 18 fish:
+  Then, N1=3,  N2=1, N3=1, N4=..=N9=0, N10=1
+
+  Q1) How likely is it that next species is trout?  1/18
+  Q2) How likely is it that next species is new (i.e. catfish or bass)
+  – N1=3 -> using our estimate of things-we-saw-once to estimate the new things
+         -> Q2 = 3/18 (because N1=3)
+  
+  Q3) Assuming so, how likely is it that next species is trout?
+      Given Q2, we know that must be less than 1/18 (at Q1)
+ 
+- Good Turing calculations:
+
+  -- freq 0 (unseen)
+     - P*GT(unseen) = N1 / N
+
+  -- freq C (seen C-times)
+     - C* = (C+1)*(Nc+1) / Nc
+     - P*GT(C*) = (C*)/N
+
+  In our example (Q3):
+  Unseen: P*GT(unseen) = N1/N = 3/18
+  Seen once (trout):
+    C*(trout) = (1+1)* N2/N1 = 2/3 
+    P*GT(trout) = C*(trout)/N = (2/3)/18 = 1/     	 
+
+
+2.7.2) Ney et al. Good Turing Intuition:
+
+       "L02 Language Modeling.pdf", 71-72)
+
+2.7.3) Good-Turing complications:
+
+       "L02 Language Modeling.pdf", 73)
+
+
+#-------------------------------------------------------------------------------
+2.8) Kneser-Ney Smoothing (8:59)
+#-------------------------------------------------------------------------------
+
+-Definition [http://en.wikipedia.org/wiki/Kneser%E2%80%93Ney_smoothing]
+
+Kneser–Ney smoothing is a method primarily used to calculate the probability
+distribution of n-grams in a document based on their histories.
+
+[1] It is widely considered the most effective method of smoothing due to its
+use of absolute discounting by subtracting a fixed value from the probability's
+lower order terms to omit n-grams with lower frequencies.
+
+This approach has been considered equally effective for both higher and lower
+order n-grams.
+
+- Equations (bigram & n-gram)
+
+  "L02 Language Modeling.pdf", 81-82)
+  http://en.wikipedia.org/wiki/Kneser%E2%80%93Ney_smoothing
+
+- Method explanation: "L02 Language Modeling.pdf", 76-82)
+
+
+
+
+################################################################################
+## 3) Lecture03.Spelling_Correction
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# 3.1) The Spelling Correction Task (5:39)
+#-------------------------------------------------------------------------------
+
+
+
+
+############################################################################
+#
+# References
+#
+############################################################################
+
+
+[2.2] Estimating N-gram Probabilities (9:38)
+
+[2.2.1] Language Modeling Toolkits
+	SRILM – http://www.speech.sri.com/projects/srilm/
+
+[2.2.2] Google Book N-grams - http://ngrams.googlelabs.com/
+
+
+
+
+
