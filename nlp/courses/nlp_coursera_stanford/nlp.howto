@@ -26,12 +26,12 @@
    2.6) Interpolation, Backoff, and Web-Scale LMs (10:25)
    	2.6.1) Interpolation
    	2.6.2) Unknown words: Open versus closed vocabulary tasks
-	2.6.3) N-gram Smoothing Summary
    2.7) Good-Turing Smoothing (15:35)   
    	2.7.2) Ney et al. Good Turing Intuition:
 	2.7.3) Good-Turing complications:
    2.8) Kneser-Ney Smoothing (8:59)
-
+   	2.8.end) N-gram Smoothing Summary
+	
    Recap
    ● N-gram Language Model
    ● Estimation
@@ -195,20 +195,20 @@ c) The Local Alignmnet Problem:
 # 2.1) Introduction to N-grams (8:41)
 #-------------------------------------------------------------------------------
 
-a) Goal: assign a probability to a sentence: p(...) > p(...)
+GOAL: predict the next word in a sentence.
 
+a) HOW: assign a probability to a sentence: p(...) > p(...)
 - Why?: spell correction, speech recognition, ...
-- How: apply the Chain Rule of Probability
+- How detail: apply the Chain Rule of Probability
        P(A, B) = P(A) P(B|A)
        P(x1,x2,x3,…,xn) = P(x1)P(x2|x1)P(x3|x1,x2)…P(xn|x1,…,xn-1)
        P(Word1 W2 ..Wn) = MULT(i)  P(Wi/W1 W2 .. Wi-1)
 
-- How to estimate these probabilities:
 Problem: too many possible sentences to use the chain rule formula
 Solution: Simplifying assumption -> the Markov assumption
 
 
-b) Markov Assumption: use the last few (Wi-k .. Wi-1)) words
+b) MARKOV ASSUMPTION: use the last few (Wi-k .. Wi-1)) words
 
    P(Wi / W1 W2 .. Wi-1) =~ P(Wi / Wi-k .. Wi-1)
 
@@ -222,7 +222,7 @@ b) Markov Assumption: use the last few (Wi-k .. Wi-1)) words
 
 
   Hint: N-GRAM MODELS OVER-FITTING (bad generalization) -> n-gram only work
-  well for word prediction if the test corpus looks like the set corpus
+  well for word prediction if the test corpus looks like the training corpus
   (i.e. Both a Shakespeare test (OK), training with Shakes. and test with Wall
   Street Journal (BAD))
 
@@ -233,7 +233,8 @@ b) Markov Assumption: use the last few (Wi-k .. Wi-1)) words
 
 c) Estimating bigram probabilities
 
-  MLE estimate: maximizes the likelihood of the training set T given the model M
+  MLE estimate (most likely estimate): maximizes the likelihood of the training
+  set T given the model M
 
   P(Wi / Wi-1) = count(Wi-1, Wi) / count(Wi-1)
 
@@ -242,12 +243,15 @@ c) Estimating bigram probabilities
 <s> I am Sam </s>
 <s> Sam I am </s>
 <s> I do not like green eggs and ham </s>
-p(<s> I am Sam </s>) ?
+
+Q: p(<s> I am Sam </s>) ?
 
 P(I/<s>) = c(<s>, I) / (c(<s>) = 2/3 = 0.67
 P(am/I) = 0.67
 P(Sam/am) = 1/2=0.5
 P(</s> / Sam) = 0.5
+
+\Warning: chain rule limitation to 2 words (Markov assumption for bigrams)
 p(<s> I am Sam </s>) = P(I/<s>) * P(am/I) * P(Sam/am) * P(</s> / Sam) = 1/9
 
 \Warning: Practical issue: we do all in log space (avoid underflow due to low
@@ -287,11 +291,12 @@ Quick & dirty solution: bad generalization BUT quick to take a look to a model.
 - Intuition of Perplexity: the best language model is one that best predicts an
   unseen test set, thus Gives the highest P(sentence).
 
-  	  LOWER PERPLEXITY = BETTER MODEL
+- Perplexity = inverse prob. of the test set normalized by the number of words:
 
-- Formula: PP(W) = P(w1w2...wN) exp (-1/N) #note.- Wi of the "test set"
+	       PP(W) = P(w1w2...wN) exp (-1/N)  # N = number of words 
 
-	  MINIMIZING PERPLEXITY = MAXIMIZING PROBABILITY
+  LOWER PERPLEXITY = BETTER MODEL -> MIN. PERPLEXITY = MAXIMIZING PROBABILITY
+
 
 - The Shannon Game intuition for perplexity
 • How hard is the task of recognizing digits ‘0,1,2,3,4,5,6,7,8,9’
@@ -318,12 +323,15 @@ occurrences in the training set but exits some occurrences in the test set.
 2.5) Add-One (Laplace) smoothing (6:30)
 #-------------------------------------------------------------------------------
 
-• Pretend we saw each word one more time than we did -> Just add one to all the
-  counts!
+- Smoothing intuition: avoid the "Zeros generalization problem" by removing a
+  bit prob. of the actual found words to give it to the yet unfounded words.
 
-• MLE estimate: P MLE (wi | wi-1) = c(wi-1,wi ) / c(wi-1)
+- i.e. Laplace smoothing: pretend we saw each word one more time than we did ->
+  just add one to all the counts.
 
-• Add-1 estimate: P Add-1(wi | wi-1) = c(wi-1,wi )+ 1 / c(wi-1)+ V
+  • MLE estimate: P_MLE (wi | wi-1) = c(wi-1,wi ) / c(wi-1)
+
+  • Add-1 estimate: P_Add-1(wi | wi-1) = c(wi-1,wi )+1 / c(wi-1)+V
 
 (*) Example (Berkeley Restaurant example.- "L02 Language Modeling.pdf", 50) ->
 sometimes lead to big changes from the MLE method -> bad for N-grams.
@@ -353,7 +361,7 @@ a) Backoff:
 b) Interpolation:
    – mix unigram, bigram, trigram
 
-   b1) Linear Interpolation
+   b1) e.g. Linear Interpolation
 
        P(Wn|Wn-1Wn-2) = λ1*P(Wn|Wn-1Wn-2)     # λ1 trigram
        		        + λ2*P(Wn|Wn-1)       # λ2 bigram
@@ -364,7 +372,7 @@ b) Interpolation:
        - Dev. set: search for λs that give largest probability to dev. set
        - Test set: check how good is the model.
 
-!! EXPERIMENTALLY CHECKED: Interpolation works better
+!! EXPERIMENTALLY CHECKED: Interpolation works better than backoff
 
 
 2.6.2) Unknown words: Open versus closed vocabulary tasks
@@ -380,17 +388,7 @@ step 2) Training of <UNK> probabilities
  b) At text normalization phase, any training word not in L changed to <UNK>
  c) Now we train its probabilities like a normal word
  d) At decoding time:
-    If text input: Use UNK probabilities for any word not in training
-
-
-2.6.3) N-gram Smoothing Summary
-
-• Add-1 smoothing: OK for text categorization, not for language modeling
-
-• The most commonly used method: Extended Interpolated Kneser-Ney
-
-• For very large N-grams like the Web: Stupid backoff (No discounting, just use
-  relative frequencies)
+    If text input: Use UNK probabilities for any word not in training set.
 
 
 #-------------------------------------------------------------------------------
@@ -408,6 +406,7 @@ step 2) Training of <UNK> probabilities
   Then, N1=3,  N2=1, N3=1, N4=..=N9=0, N10=1
 
   Q1) How likely is it that next species is trout?  1/18
+
   Q2) How likely is it that next species is new (i.e. catfish or bass)
   – N1=3 -> using our estimate of things-we-saw-once to estimate the new things
          -> Q2 = 3/18 (because N1=3)
@@ -427,8 +426,8 @@ step 2) Training of <UNK> probabilities
   In our example (Q3):
   Unseen: P*GT(unseen) = N1/N = 3/18
   Seen once (trout):
-    C*(trout) = (1+1)* N2/N1 = 2/3 
-    P*GT(trout) = C*(trout)/N = (2/3)/18 = 1/     	 
+    C*(trout) = (1+1)*N2 / N1 = 2/3 
+    P*GT(trout) = C*(trout)/N = (2/3)/18 = 1/27   	 
 
 
 2.7.2) Ney et al. Good Turing Intuition:
@@ -464,6 +463,14 @@ order n-grams.
 - Method explanation: "L02 Language Modeling.pdf", 76-82)
 
 
+2.8.end) N-gram Smoothing Summary
+
+• Add-1 smoothing: OK for text categorization, not for language modeling
+
+• The most commonly used method: Extended Interpolated Kneser-Ney
+
+• For very large N-grams like the Web: Stupid backoff (No discounting, just use
+  relative frequencies)
 
 
 ################################################################################
@@ -475,6 +482,134 @@ order n-grams.
 # 3.1) The Spelling Correction Task (5:39)
 #-------------------------------------------------------------------------------
 
+a) Tasks:
+• Spelling Error Detection
+• Spelling Error Correction
+  – Auto-correct (hte -> the)
+  – Suggest a correction (list)
+
+b) Spelling errors in a text are either "non-word errors" or "real-word errors."
+
+   - non-word errors: produces a string of letters that is not a word, as when
+     "the" is typed as "teh."
+
+   - real-word errors
+     • Typographical errors: three -> there      
+     • Cognitive errors (homophones): too -> two
+
+
+#-------------------------------------------------------------------------------
+# 3.2) The Noisy Channel Model of Spelling (19:30)
+#-------------------------------------------------------------------------------
+
+3.2.1) Noisy Channel Intuition
+
+       ERROR:       original word  --> NOISY CHANNEL --> noisy word (X)
+
+       SOLUTION:    noisy word  --> DECODER --> guessed word (W)
+
+
+3.2.2) Noisy Channel equation
+
+       w' = argmax P(w | x)  =   (Bayes Rule)
+            w in V
+
+       w' = argmax (P(x | w) P(w)) / P(x) = (maximizing -> P(x)->0)
+            w in V
+
+       w' = argmax (P(x | w) P(w))
+            w in V
+
+	    - P(x|w): Channel/Error Modeling Term
+	    - P(w): Language Model Term
+
+
+3.2.3) Spelling Error Correction: suggest a correction word using the Nosy
+       channel model (see example at "L03 Spelling Correction.pdf", 14-30)
+
+       Resolve: w' = argmax (P(x | w) P(w))
+
+step_1: Candidate generation (finding W)
+
+	- Method: Words with similar pronunciation
+	- Method: Words with similar spelling
+	  • Damerau-Levenshtein edit distance (Insertion, Deletion ,
+            Substitution, and Transposition of two adjacent letters)
+
+step_2: Calculate the Language Model Term (P(w))
+
+	- Use any of the language modeling algorithms we’ve learned (unigram,
+          ..., Backoff)
+
+step_3: Calculate the w): Channel Modeling Term P(x|w)
+
+	- P(x|w) = probability of the edit
+          	   (deletion/insertion/substitution/transposition)
+
+a) Generate the confusion matrix [3.1.4], [3.1.5]
+b) Use the matrix to calculate a list of P(x|w)
+
+step_4: Calculate the Noisy channel probability: w' = (P(x | w) P(w))
+
+step_5: Choose the candidate word (w') with the greater prob.
+
+step_6: Evaluation using spelling error test sets [3.1]
+
+
+#-------------------------------------------------------------------------------
+# 3.3) Real-Word Spelling Correction (9:19)
+#-------------------------------------------------------------------------------
+
+step_1: For each word in sentence Generate candidate set
+	  ● the word itself
+	  ● all single-letter edits that are English words
+	  ● words that are homophones
+
+step_2: Choose best candidates
+	● Noisy channel model
+	● Task-specific classifier
+
+step_3: Noisy channel for real-word spell correction
+a) Given a sentence w1,w2,w3,…,wn generate a set of candidates for each word wi
+  Candidate(w1) = {w1, w’1 , w’’1 , w’’’1 ,…}
+  Candidate(w2) = {w2, w’2 , w’’2 , w’’’2 ,…}
+  Candidate(wn) = {wn, w’n , w’’n , w’’’n ,…}
+b) Choose the sequence W that maximizes P(W)
+
+  SIMPLIFICATION: in practice, fix to one error per sentence and them Choose
+  the sequence W that maximizes P(W)
+
+Where to get the probabilities
+• Language model: 
+• Channel model
+  – Same as for non-word spelling correction
+  – Plus need probability for no error, P(w|w)
+
+
+#-------------------------------------------------------------------------------
+# 3.4) State of the Art Systems (7:10)
+#-------------------------------------------------------------------------------
+
+- HCI issues in spelling
+
+• If very confident in correction ->  Autocorrect
+• Less confident -> Give the best correction
+• Less confident -> Give a correction list
+• Unconfident -> Just flag as an error
+
+
+- State of the art noisy channel
+   
+   In the ecuation at 3.2.2) in practice weigh the probabilies (λ)
+
+       w' = argmax P(x|w) (P(w)^λ)
+            w in V
+
+   and learn λ from a development test set.
+
+
+- Phonetic error model: use pronunciation, convert misspelling to metaphone
+  pronunciation.
 
 
 
@@ -492,7 +627,11 @@ order n-grams.
 
 [2.2.2] Google Book N-grams - http://ngrams.googlelabs.com/
 
-
-
+[3.1] Some spelling error test sets
+[3.1.1] Wikipedia’s list of common English misspelling - http://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings/For_machines
+[3.1.2] Aspell filtered version of that list - http://aspell.net/test/
+[3.1.3] Birkbeck spelling err corpus - http://www.ota.ox.ac.uk/headers/0643.xml
+[3.1.4] Peter Norvig list of errors - http://norvig.com/ngrams/spell-errors.txt
+[3.1.5] Peter Norvig’s list of counts of single-edit errors - http://norvig.com/ngrams/spell-errors.txt
 
 
