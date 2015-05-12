@@ -48,6 +48,28 @@
    3.4) State of the Art Systems (7:10)
 
 
+4) Lecture 04: Text Classification
+   4.1) The Task of Text Classification
+   4.2) Naive Bayes Intuition
+   4.3) Formalizing the Naive Bayes Classifier
+   4.4) Naive Bayes: Learning
+   4.5) Naive Bayes: Relationship to Language Modeling
+   4.6) Multinomial Naive Bayes: A Worked Example
+      4.6.1) Example
+      4.6.2) Naive Bayes Summary
+   4.7) Precision, Recall, and the F measure
+   4.8) Text Classification: Evaluation
+   4.9) Text Classification: Practical Issues
+
+
+5) Sentiment Analysis
+   5.1) What is Sentiment Analysis? (7:17)
+   5.2) Sentiment Analysis: A baseline algorithm (13:27)
+   5.3) Sentiment Lexicons (8:37)
+   5.4) Learning Sentiment Lexicons (14:45)
+   5.5) Other Sentiment Tasks (11:01)
+
+
 Annex) References
 
 
@@ -299,10 +321,10 @@ Quick & dirty solution: bad generalization BUT quick to take a look to a model.
 
 
 - The Shannon Game intuition for perplexity
-• How hard is the task of recognizing digits ‘0,1,2,3,4,5,6,7,8,9’
-  Perplexity 10
-• How hard is recognizing (30,000) names at Microsoft.
-  Perplexity = 30,000
+  • How hard is the task of recognizing digits ‘0,1,2,3,4,5,6,7,8,9’
+    Perplexity 10
+    • How hard is recognizing (30,000) names at Microsoft.
+    Perplexity = 30,000
 
 - Perplexity as branching factor
 
@@ -473,6 +495,7 @@ order n-grams.
   relative frequencies)
 
 
+
 ################################################################################
 ## 3) Lecture03.Spelling_Correction
 ################################################################################
@@ -610,6 +633,294 @@ Where to get the probabilities
 
 - Phonetic error model: use pronunciation, convert misspelling to metaphone
   pronunciation.
+
+
+
+################################################################################
+## 4) Lecture 04: Text Classification
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# 4.1) The Task of Text Classification
+#-------------------------------------------------------------------------------
+
+- Resolve problems like: Spam detection; Authorship, Age/gender, language
+  identification, Sentiment analysis
+
+- Text Classification: definition
+  • Input:
+    – a document d
+    – a fixed set of classes C = {c1, c2,…, cJ}
+  • Output: a predicted class c in C
+
+- Classification Methods: Hand-coded rules / Supervised Machine Learning
+
+a) Hand-coded rules
+Rules based on combinations of words or other features
+GOOD: Accuracy can be high if rules carefully refined by expert
+BAD: building and maintaining these rules is expensive
+
+b) Supervised Machine Learning
+• Input:
+  – a document d
+  – a fixed set of classes C = {c1, c2,…, cJ}
+  – A training set of m hand-labeled documents (d1,c1),...., (dm,cm)
+• Output:
+  – a learned classifier γ:d in c
+
+
+#-------------------------------------------------------------------------------
+# 4.2) Naive Bayes Intuition
+#-------------------------------------------------------------------------------
+
+- "Bag of words" = all the document OR a subset of words
+
+       Gamma(Bag) = C ;   C: positive or negative class
+
+#-------------------------------------------------------------------------------
+# 4.3) Formalizing the Naive Bayes Classifier
+#-------------------------------------------------------------------------------
+
+For a document d and a class c
+
+    C_map = argmax P(c | d)  = argmax P(d | c)P(c)
+    	    c in C             c in C
+
+- Document d represented as features x1..xn
+
+    C_map = argmax P(x1, x2,…, xn | c)P(c)
+            c in C
+
+
+a) Multinomial Naive Bayes Classifier
+
+   C_sub_NB = argmax  {P(Cj)  MULT  P(x|c)}
+              c in C         x in X
+
+b) Applying Multinomial Naive Bayes Classifiers to Text Classification:
+
+- positions <- all word positions in test document
+
+   C_sub_NB = argmax  {P(Cj)     MULT        P(Xi|Cj)}
+              Cj in C        i in positions
+
+
+e.g.- class c=china; x1=Sanghai, x2=and, x3=Shenzhen, ...
+
+
+#-------------------------------------------------------------------------------
+# 4.4) Naive Bayes: Learning
+#-------------------------------------------------------------------------------
+
+Equations (with Add-One (Laplace) smoothing)
+
+Prior:  P(c) = Nc / N
+	# prob. class C = docs of class C / all docs
+
+
+Likelihood: P(Wi/c) = count(Wi/c)+1 / count(w/c)+[V]
+# prob. word-i in class C =count Wi in the class / ALL the words in the class
+
+
+P(class / document):   P(d|c) = MULT P(word|class) / P(d)  (* see 4.5)
+
+
+#-------------------------------------------------------------------------------
+# 4.5) Naive Bayes: Relationship to Language Modeling
+#-------------------------------------------------------------------------------
+
+• Naive Bayes classifiers can use any sort of features: URL, email address,
+  dictionaries, network features
+
+• But IF, we use only word features then we use all of the words in the text
+  (not a subset) THEN Naive Bayes =~ language modeling:
+
+  Each class = a unigram language model
+
+  thus, assigning each sentence: P(s|c)= MULT P(word|c)
+
+
+#-------------------------------------------------------------------------------
+# 4.6) Multinomial Naive Bayes: A Worked Example
+#-------------------------------------------------------------------------------
+
+4.6.1) Example.- see detail "4_6.Multinomial_Naive_Bayes.A_Worked_Example.mp4"
+
+4.6.2) Naive Bayes Summary: 
+
+• Very Fast, low storage requirements
+ • Robust to Irrelevant Features
+ • Very good in domains with many equally important features
+ • Optimal if the independence assumptions hold: If assumed independence is
+ correct, then it is the Bayes Optimal Classifier for problem
+ • A good dependable baseline for text classification
+
+– But we will see other classifiers that give better accuracy
+
+
+#-------------------------------------------------------------------------------
+# 4.7) Precision, Recall, and the F measure
+#-------------------------------------------------------------------------------
+
+- The 2-by-2 contingency table
+
+                     | CORRECT | NOT CORRECT |
+		     -------------------------
+PREDICTED (seleted)  |   TP    |      FP     |
+		     -------------------------
+      (not seleted)  |   FN    |      TN     |
+		     -------------------------
+
+* Bad measure for Skewed (uncommon classes): ACCURACY
+
+  - accuracy = (TP+TN)/(TP+TN+FP+FN)
+
+* Good measure for Skewed: PRECISION, RECALL, F1SCORE
+
+  - precision = TP / TP+FP    # % of the selected that are correct values
+
+  - recall = TP / TP+ FN      # % of correct values that are selected
+
+  WARNING: there is a trade-off between precision and recall -> F1SCORE
+
+  - F1 = 2PR/(P+R)
+
+
+#-------------------------------------------------------------------------------
+# 4.8) Text Classification: Evaluation
+#-------------------------------------------------------------------------------
+
+- Documents for make an evaluation: Classic Reuters-21578 Data Set
+
+a) Create the confusion matrix c: For each pair of classes <c1,c2> how many
+documents from c1 were incorrectly assigned to c2?
+
+b) Per class evaluation measures over the confusion matrix: recall, precision,
+accuracy.
+
+c) Micro- vs. Macro-Averaging:
+• Macroaveraging: Compute performance for each class, then average.
+• Microaveraging: Collect decisions for all classes, compute contingency table,
+  evaluate.
+
+d) Development Test Sets and Cross-validation: training+CV+Test sets
+
+
+#-------------------------------------------------------------------------------
+# 4.9) Text Classification: Practical Issues
+#-------------------------------------------------------------------------------
+
+4.9.1) Selecting the Classifier
+
+a) No training data?
+
+   Use Manually written rules
+
+   "If (wheat or grain) and not (whole or bread) then Categorize as grain"
+
+• Need careful crafting
+  – Human tuning on development data
+  – Time-consuming: 2 days per class
+
+
+b) Very little data?
+
+• Use Naïve Bayes
+  – Naïve Bayes is a “high-bias” algorithm (low overfitting).
+  
+• Get more labeled data
+  – Find clever ways to get humans to label data for you
+
+• Try semi-supervised training methods:
+  – Bootstrapping, EM over unlabeled documents, …
+
+
+c) A reasonable amount of data?
+
+• Perfect for all the clever classifiers
+  – SVM
+  – Regularized Logistic Regression
+
+• You can even use user-interpretable decision trees
+  – Users like to hack
+  – Management likes quick fixes
+
+
+d) A huge amount of data?
+
+• Can achieve high accuracy!
+• At a cost:
+  – SVMs (train time) or kNN (test time) can be too slow
+  – Regularized logistic regression can be somewhat better
+• So Naïve Bayes can come back into its own again!
+
+WARNING: With enough data the Classifier may not matter (similar results)
+
+
+4.9.2) Real-world systems generally combine:
+• Automatic classification
+• Manual review of uncertain/difficult/"new” cases
+
+4.9.3) Underflow Prevention: use the "log space" -> Model = MAX(sum of weights)
+
+4.9.4) How to tweak performance
+
+• Domain-specific features and weights: very important in real performance
+
+• Sometimes need to collapse terms:
+  – Part numbers, chemical formulas, …
+  – But stemming generally doesn’t help
+
+• Upweighting: Counting a word as if it occurred twice:
+  – title words (Cohen & Singer 1996)
+  – first sentence of each paragraph (Murata, 1999)
+  – In sentences that contain title words (Ko et al, 2002)
+
+
+################################################################################
+## 5) Sentiment Analysis
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# 5.1) What is Sentiment Analysis? (7:17)
+#-------------------------------------------------------------------------------
+
+
+
+
+#-------------------------------------------------------------------------------
+# 5.2) Sentiment Analysis: A baseline algorithm (13:27)
+#-------------------------------------------------------------------------------
+
+
+
+
+#-------------------------------------------------------------------------------
+# 5.3) Sentiment Lexicons (8:37)
+#-------------------------------------------------------------------------------
+
+
+
+
+#-------------------------------------------------------------------------------
+# 5.4) Learning Sentiment Lexicons (14:45)
+#-------------------------------------------------------------------------------
+
+
+
+
+#-------------------------------------------------------------------------------
+# 5.5) Other Sentiment Tasks (11:01)
+#-------------------------------------------------------------------------------
+
+   
+   
+   
+   
+   
+
 
 
 
