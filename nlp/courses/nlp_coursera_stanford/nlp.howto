@@ -676,7 +676,12 @@ b) Supervised Machine Learning
 
 - "Bag of words" = all the document OR a subset of words
 
-       Gamma(Bag) = C ;   C: positive or negative class
+       Gamma(Bag) = C ;   class C: e.g. positive or negative class
+
+- WARNING: categories classes: they include words defining the class
+  (e.g. "excellent", "brilliant", ... for a positive review class).
+  There are several list in the Web [5.3.1], [5.3.2].
+         
 
 #-------------------------------------------------------------------------------
 # 4.3) Formalizing the Naive Bayes Classifier
@@ -878,6 +883,8 @@ WARNING: With enough data the Classifier may not matter (similar results)
   – In sentences that contain title words (Ko et al, 2002)
 
 
+
+
 ################################################################################
 ## 5) Sentiment Analysis
 ################################################################################
@@ -887,41 +894,105 @@ WARNING: With enough data the Classifier may not matter (similar results)
 # 5.1) What is Sentiment Analysis? (7:17)
 #-------------------------------------------------------------------------------
 
+• Sentiment analysis is the detection of attitudes “enduring, affectively
+  colored beliefs, dispositions towards objects or persons”
 
+  1. Holder (source) of attitude
+  2. Target (aspect) of attitude
+  3. Type of attitude
+     • From a set of types (Like, love, hate, value, desire, etc.)
+     • Or (more commonly) simple weighted polarity: (positive, negative, ...)
+  4. Text containing the attitude: sentence or entire document
+
+
+• Simplest task: Is the attitude of this text positive or negative?
+
+• More complex: Rank the attitude of this text from 1 to 5
+
+• Advanced: Detect the target, source, or complex attitude types
 
 
 #-------------------------------------------------------------------------------
 # 5.2) Sentiment Analysis: A baseline algorithm (13:27)
 #-------------------------------------------------------------------------------
 
+5.2.1) Binarized (Boolean feature) Multinomial Naive Bayes
 
+       a) First remove all duplicate words from d
+       b) Then compute NB using the same equation: (4.3.b)
+
+5.2.2) Issues
+
+a) Tokenization Issues (Twitter, XML, phone numbers, ...)
+b) Handle negation
+c) Other classifiers: MaxEnt and SVM tend to do better than Naive Bayes.
+d) Which words to use: ALL (5.2.1) vs some of them.
 
 
 #-------------------------------------------------------------------------------
 # 5.3) Sentiment Lexicons (8:37)
 #-------------------------------------------------------------------------------
 
+• There are several sites that provides lexicons as Class indexes [5.3.1],
+  [5.3.2], (see "L05 Sentiment Analysis.pdf" , 36-41)
 
+• polarity lexicons: How likely is each word to appear in each sentiment class?
+  - raw counts -> BAD
+  - likelihood -> OK
+  - Scaled likelihood: Make them comparable between words: P(w/c) / P(w)
+    See example "Analyzing the polarity of each word in IMDB" at "L05 Sentiment
+    Analysis.pdf", page 43.
+
+• Logical negation: Is logical negation (no, not) associated with negative
+  sentiment?
 
 
 #-------------------------------------------------------------------------------
 # 5.4) Learning Sentiment Lexicons (14:45)
 #-------------------------------------------------------------------------------
 
+* How to build our own Sentiment Lexicon? ...
 
+... Use Semi-supervised learning of lexicons
+
+
+• Advantages:
+  – Can be domain-specific
+  – Can be more robust (more words)
+
+• Intuition
+  – Start with a seed set of words (‘good’, ‘poor’)
+  – Find other words that have similar polarity:
+    ● Using “and” and “but”
+    ● Using words that occur nearby in the same document
+    ● Using WordNet synonyms and antonyms
+
+* Algoritmhs: Hatzivassiloglou & McKeown, Turney, WordNet.
 
 
 #-------------------------------------------------------------------------------
 # 5.5) Other Sentiment Tasks (11:01)
 #-------------------------------------------------------------------------------
 
-   
-   
-   
-   
+• Finding aspect/attribute/target of sentiment
+
+• Unbalanced classes
+
+• Non-binary classes
    
 
+  
+SUMMARY ON SENTIMENT
 
+• Generally modeled as classification or regression task
+  – predict a binary or ordinal label (rating 1-5)
+
+• Features:
+  – Negation is important
+  – Using all words (in Naive bayes) works well for some tasks
+  – Finding subsets of words may help in other tasks
+    ● Hand-built polarity lexicons
+    ● Use seeds and semi-supervised learning to induce lexicons
 
 
 ############################################################################
@@ -946,3 +1017,6 @@ WARNING: With enough data the Classifier may not matter (similar results)
 [3.1.5] Peter Norvig’s list of counts of single-edit errors - http://norvig.com/ngrams/spell-errors.txt
 
 
+[5.3.1] The General Inquirer, List of Categories - http://www.wjh.harvard.edu/~inquirer/homecat.htm
+
+[5.3.2] LIWC (Linguistic Inquiry and Word Count) - http://www.liwc.net/
