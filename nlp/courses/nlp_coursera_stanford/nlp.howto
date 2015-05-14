@@ -62,12 +62,21 @@
    4.9) Text Classification: Practical Issues
 
 
-5) Sentiment Analysis
+5) Lecture 05: Sentiment Analysis
    5.1) What is Sentiment Analysis? (7:17)
    5.2) Sentiment Analysis: A baseline algorithm (13:27)
    5.3) Sentiment Lexicons (8:37)
    5.4) Learning Sentiment Lexicons (14:45)
    5.5) Other Sentiment Tasks (11:01)
+
+
+6) Lecture 06: Maximum_Entropy_classifiers
+   6.1) Generative_vs_Discriminative_Models
+   6.2) Making_features_from_text_for_discriminative_NLP_models
+   6.3) Feature-Based_Linear_Classifiers
+   6.4) Building_Maxent_Model.The_Nuts_and_Bolts
+   6.5) Generative_vs_Discriminative_models.The_problem_of_overcounting_evidence
+   6.6) Maximizing_the_Likelihood
 
 
 Annex) References
@@ -886,7 +895,7 @@ WARNING: With enough data the Classifier may not matter (similar results)
 
 
 ################################################################################
-## 5) Sentiment Analysis
+## 5) Lecture 05: Sentiment Analysis
 ################################################################################
 
 
@@ -993,6 +1002,89 @@ SUMMARY ON SENTIMENT
   – Finding subsets of words may help in other tasks
     ● Hand-built polarity lexicons
     ● Use seeds and semi-supervised learning to induce lexicons
+
+
+
+
+################################################################################
+6) Lecture 06: Maximum_Entropy_classifiers
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# 6.1) Generative_vs_Discriminative_Models
+#-------------------------------------------------------------------------------
+
+• Generative Models: Language models, Naive Bayes
+  GOOD: trivial to choose weights: just relative frequencies
+  
+
+gives probabilities P(d,c) and tries to maximize this joint
+likelihood
+
+  c -> d1    ; thus P(c) * P(d1/c) 
+    -> d2
+    -> d3
+
+• Discriminative (Conditional) models: 
+
+   - Probabilistic:
+   - Non Prob.: SVMs, (averaged) perceptron
+
+   BAD: hard to do (choose weights)
+   GOOD: high accuracy performance
+   GOOD: easy to incorporate lots of linguistically important features
+   GOOD: allow automatic building of language indep., retargetable NLP modules
+
+  c <- d1    ; thus P(c | d1, d2, d3)   MACHINE LEARNING!
+    <- d2
+    <- d3
+
+WARNING: smoothing = Regularization (M.L.)
+
+
+Example.-  Tests on classic Reuters data set (and others). F1 score result:
+	   – Naïve Bayes: 77.0% F1
+	   – Linear regression: 86.0%
+	   – Logistic regression: 86.4%
+	   – Support vector machine: 86.5%
+
+#-------------------------------------------------------------------------------
+# 6.2) Making_features_from_text_for_discriminative_NLP_models
+#-------------------------------------------------------------------------------
+
+• f: C x D → ℝ
+
+  in NLP (ussually):  f_i(c, d) == [Φ(d) AND c = Cj] [Value is 0 or 1]
+
+  e.g.- Document current data "... Stocks hit a yearly low ...
+       	fi = [“stocks” occur AND Label=”BUSINESS”]
+
+
+• Weight: Models will assign to each feature a weight:
+
+
+
+#-------------------------------------------------------------------------------
+# 6.3) Feature-Based_Linear_Classifiers
+#-------------------------------------------------------------------------------
+
+ML methods: Logistic REgression, SVMs, ...
+
+
+#-------------------------------------------------------------------------------
+# 6.4) Building_Maxent_Model.The_Nuts_and_Bolts
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+# 6.5) Generative_vs_Discriminative_models.The_problem_of_overcounting_evidence
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+# 6.6) Maximizing_the_Likelihood
+#-------------------------------------------------------------------------------
 
 
 ############################################################################
